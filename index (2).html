@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="noindex,nofollow">
+<title>Video player</title>
+<style>
+html,body{margin:0;height:100%;background:#000}
+iframe{position:fixed;inset:0;width:100%;height:100%;border:0}
+p{color:#bbb;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;text-align:center;padding:0 20px;margin-top:40vh}
+</style>
+</head>
+<body>
+<script>
+// YouTube player page for offline study portals.
+// A portal opened from a downloaded file has no web address, so YouTube refuses to play inside it.
+// The portal loads this page instead (e.g. .../#v=VIDEO_ID&start=90); this page then loads YouTube,
+// which sees this site's address and plays normally. It only ever shows YouTube videos.
+(function(){
+  var h = new URLSearchParams(location.hash.slice(1));
+  var v = h.get("v") || "", list = h.get("list") || "", start = parseInt(h.get("start") || "0", 10) || 0;
+  if (!/^[\w-]{6,20}$/.test(v)) v = "";
+  if (list && !/^[\w-]{2,64}$/.test(list)) list = "";
+  if (!v && !list){ document.body.innerHTML = "<p>This page plays YouTube videos for a study portal. No video was selected.</p>"; return; }
+  var f = document.createElement("iframe");
+  f.src = "https://www.youtube-nocookie.com/embed/" + (v || "videoseries") + "?rel=0&playsinline=1&enablejsapi=1&origin=" + encodeURIComponent(location.origin) +
+          (start ? "&start=" + start : "") + (list ? "&list=" + encodeURIComponent(list) : "");
+  f.title = "YouTube video";
+  f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
+  f.allowFullscreen = true;
+  f.referrerPolicy = "strict-origin-when-cross-origin";
+  document.body.appendChild(f);
+  // Play / pause from the study portal's mini-player, and tell the portal whether the video is playing.
+  var YT = /^https:\/\/www\.youtube(-nocookie)?\.com$/, last = "", sent = 0, pos = {t: 0, d: 0, m: false};
+  function cmd(fn){ try { f.contentWindow.postMessage(JSON.stringify({event: "command", func: fn, args: []}), "*"); } catch(e){} }
+  function listen(){ try { f.contentWindow.postMessage(JSON.stringify({event: "listening", id: 1, channel: "widget"}), "*"); } catch(e){} }
+  f.addEventListener("load", function(){ listen(); var n = 0, t = setInterval(function(){ listen(); if (++n > 8) clearInterval(t); }, 500); });
+  window.addEventListener("message", function(e){
+    if (e.source === window.parent && e.data && e.data.portalYT){        // from the portal
+      var c = e.data.cmd;
+      if (c === "play") cmd("playVideo"); else if (c === "pause") cmd("pauseVideo");
+      else if (c === "mute") cmd("mute"); else if (c === "unmute") cmd("unMute");
+      else if (c === "seek" && typeof e.data.v === "number") try { f.contentWindow.postMessage(JSON.stringify({event: "command", func: "seekTo", args: [e.data.v, true]}), "*"); } catch(x){}
+      return;
+    }
+    if (e.source !== f.contentWindow || !YT.test(e.origin)) return;     // from YouTube
+    var d; try { d = typeof e.data === "string" ? JSON.parse(e.data) : e.data; } catch(x){ return; }
+    if (!d) return;
+    var info = d.event === "infoDelivery" && d.info ? d.info : {}, st = d.event === "onStateChange" ? d.info : info.playerState;
+    if (typeof st === "number") last = st === 1 || st === 3 ? "playing" : "paused";
+    if (typeof info.currentTime === "number") pos.t = info.currentTime;
+    if (typeof info.duration === "number" && info.duration > 0) pos.d = info.duration;
+    if (typeof info.muted === "boolean") pos.m = info.muted;
+    if (!last || window.parent === window) return;
+    var now = Date.now();                                               // tell the portal: state, position, length, muted
+    if (typeof st === "number" || now - sent > 900){ sent = now; window.parent.postMessage({portalYT: 1, state: last, t: pos.t, d: pos.d, muted: pos.m}, "*"); }
+  });
+})();
+</script>
+</body>
+</html>
