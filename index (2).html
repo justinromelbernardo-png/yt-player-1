@@ -14,12 +14,15 @@ p{color:#bbb;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-
 </head>
 <body>
 <script>
-// YouTube player page for offline study portals.
+// YouTube (and Vimeo) player page for offline study portals.
 // A portal opened from a downloaded file has no web address, so YouTube refuses to play inside it.
 // The portal loads this page instead (e.g. .../#v=VIDEO_ID&start=90); this page then loads YouTube,
-// which sees this site's address and plays normally. It only ever shows YouTube videos.
+// which sees this site's address and plays normally. It only ever shows YouTube and Vimeo videos.
+// Vimeo: .../#vm=VIDEO_ID (&h=PRIVATE_HASH) — played with Vimeo's own player script, so the portal learns how far it has played.
 (function(){
   var h = new URLSearchParams(location.hash.slice(1));
+  var vm = h.get("vm") || "", vh = h.get("h") || "";
+  if (vm){ if (/^\d{5,12}$/.test(vm)) vimeo(vm, /^[0-9a-f]{6,20}$/.test(vh) ? vh : ""); else document.body.innerHTML = "<p>That Vimeo video address isn't valid.</p>"; return; }
   var v = h.get("v") || "", list = h.get("list") || "", start = parseInt(h.get("start") || "0", 10) || 0;
   if (!/^[\w-]{6,20}$/.test(v)) v = "";
   if (list && !/^[\w-]{2,64}$/.test(list)) list = "";
@@ -33,7 +36,7 @@ p{color:#bbb;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-
   f.referrerPolicy = "strict-origin-when-cross-origin";
   document.body.appendChild(f);
   // Play / pause from the study portal's mini-player, and tell the portal whether the video is playing.
-  var YT = /^https:\/\/www\.youtube(-nocookie)?\.com$/, last = "", sent = 0, pos = {t: 0, d: 0, m: false};
+  var YT = /^https:\/\/www\.youtube(-nocookie)?\.com$/, last = "", sent = 0, pos = {t: 0, d: 0, m: false, v: 100};
   function cmd(fn){ try { f.contentWindow.postMessage(JSON.stringify({event: "command", func: fn, args: []}), "*"); } catch(e){} }
   function listen(){ try { f.contentWindow.postMessage(JSON.stringify({event: "listening", id: 1, channel: "widget"}), "*"); } catch(e){} }
   f.addEventListener("load", function(){ listen(); var n = 0, t = setInterval(function(){ listen(); if (++n > 8) clearInterval(t); }, 500); });
@@ -42,6 +45,7 @@ p{color:#bbb;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-
       var c = e.data.cmd;
       if (c === "play") cmd("playVideo"); else if (c === "pause") cmd("pauseVideo");
       else if (c === "mute") cmd("mute"); else if (c === "unmute") cmd("unMute");
+      else if (c === "vol" && typeof e.data.v === "number") try { f.contentWindow.postMessage(JSON.stringify({event: "command", func: "setVolume", args: [e.data.v]}), "*"); cmd(e.data.v > 0 ? "unMute" : "mute"); } catch(x){}
       else if (c === "seek" && typeof e.data.v === "number") try { f.contentWindow.postMessage(JSON.stringify({event: "command", func: "seekTo", args: [e.data.v, true]}), "*"); } catch(x){}
       return;
     }
@@ -53,11 +57,44 @@ p{color:#bbb;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-
     if (typeof info.currentTime === "number") pos.t = info.currentTime;
     if (typeof info.duration === "number" && info.duration > 0) pos.d = info.duration;
     if (typeof info.muted === "boolean") pos.m = info.muted;
+    if (typeof info.volume === "number") pos.v = info.volume;
     if (!last || window.parent === window) return;
     var now = Date.now();                                               // tell the portal: state, position, length, muted
-    if (typeof st === "number" || now - sent > 900){ sent = now; window.parent.postMessage({portalYT: 1, state: last, t: pos.t, d: pos.d, muted: pos.m}, "*"); }
+    if (typeof st === "number" || now - sent > 900){ sent = now; window.parent.postMessage({portalYT: 1, state: last, t: pos.t, d: pos.d, muted: pos.m, vol: pos.v}, "*"); }
   });
 })();
+function vimeo(id, hash){
+  var f = document.createElement("iframe");
+  f.src = "https://player.vimeo.com/video/" + id + "?playsinline=1&dnt=1" + (hash ? "&h=" + hash : "");
+  f.title = "Vimeo video"; f.allow = "autoplay; fullscreen; picture-in-picture; encrypted-media"; f.allowFullscreen = true;
+  f.referrerPolicy = "strict-origin-when-cross-origin";
+  document.body.appendChild(f);
+  var sc = document.createElement("script"); sc.src = "https://player.vimeo.com/api/player.js";
+  sc.onload = function(){
+    if (!window.Vimeo || !Vimeo.Player) return;
+    var pl = new Vimeo.Player(f), st = "paused", pos = {t: 0, d: 0, m: false, v: 100}, sent = 0;
+    function tell(force){
+      if (window.parent === window) return;
+      var now = Date.now(); if (!force && now - sent < 900) return; sent = now;
+      window.parent.postMessage({portalYT: 1, state: st, t: pos.t, d: pos.d, muted: pos.m, vol: pos.v}, "*");
+    }
+    pl.on("play", function(){ st = "playing"; tell(true); });
+    pl.on("pause", function(){ st = "paused"; tell(true); });
+    pl.on("ended", function(){ st = "paused"; tell(true); });
+    pl.on("timeupdate", function(d){ if (d){ pos.t = d.seconds || 0; if (d.duration) pos.d = d.duration; } tell(false); });
+    pl.on("volumechange", function(d){ if (d && typeof d.volume === "number"){ pos.v = Math.round(d.volume * 100); pos.m = d.volume === 0; } tell(true); });
+    pl.getDuration().then(function(d){ pos.d = d || 0; tell(true); }).catch(function(){});
+    window.addEventListener("message", function(e){
+      if (e.source !== window.parent || !e.data || !e.data.portalYT) return;
+      var c = e.data.cmd, v = e.data.v;
+      if (c === "play") pl.play().catch(function(){}); else if (c === "pause") pl.pause().catch(function(){});
+      else if (c === "mute") pl.setVolume(0).catch(function(){}); else if (c === "unmute") pl.setVolume((pos.v || 100) / 100).catch(function(){});
+      else if (c === "vol" && typeof v === "number") pl.setVolume(Math.max(0, Math.min(1, v / 100))).catch(function(){});
+      else if (c === "seek" && typeof v === "number") pl.setCurrentTime(v).catch(function(){});
+    });
+  };
+  document.head.appendChild(sc);
+}
 </script>
 </body>
 </html>

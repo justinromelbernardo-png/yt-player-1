@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f5c4d">
+<title>Study Portal Opener</title>
+<style>
+:root{--bg:#f4f3ee;--panel:#fbfbf8;--ink:#1d2421;--muted:#5d6763;--line:#d9dbd3;--accent:#0f5c4d;--accent-ink:#fff;--accent-soft:#e2eee8;--warn:#8a5a00;--warn-soft:#fbefd5;--danger:#a3361f;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#121614;--panel:#1a201d;--ink:#e8ece9;--muted:#9aa5a0;--line:#2e3833;--accent:#62c2a8;--accent-ink:#0c1210;--accent-soft:#1d2e28;--warn:#f0c46a;--warn-soft:#2f2715;--danger:#ec8a70;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom))}
+h1{font-size:23px;line-height:1.25;margin:10px 0 4px}
+.lead{color:var(--muted);margin:0 0 18px;font-size:15px}
+.brand{display:flex;gap:10px;align-items:center;color:var(--accent);font-weight:700;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}
+.brand svg{width:22px;height:22px}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font:inherit;font-size:17px;font-weight:650;cursor:pointer;padding:12px 18px;text-decoration:none}
+.btn svg{width:22px;height:22px}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--line);min-height:46px;font-size:15px}
+.btn:disabled{opacity:.55}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.sect{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:24px 0 8px}
+.cards{display:flex;flex-direction:column;gap:10px}
+.card{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}
+.card .ico{flex:none;width:52px;height:52px;border-radius:13px;object-fit:contain;background:var(--accent-soft);display:grid;place-items:center;color:var(--accent)}
+.card .ico svg{width:26px;height:26px}
+.card .tx{flex:1;min-width:0}
+.card b{display:block;font-size:16px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card span{font-size:12.5px;color:var(--muted)}
+.card .go{flex:none;width:auto;min-height:44px;padding:8px 16px;font-size:15px;border-radius:11px}
+.card .upnow{display:block;margin-top:6px;border:0;background:none;padding:0;color:var(--accent,#0f5c4d);font:inherit;font-size:13px;font-weight:600;text-decoration:underline;cursor:pointer;text-align:left}
+.card .rm{flex:none;width:40px;height:40px;border:0;background:none;color:var(--muted);border-radius:10px;cursor:pointer;display:grid;place-items:center}
+.card .rm svg{width:19px;height:19px}
+.card .rm.sure{color:#fff;background:var(--danger);width:auto;padding:0 10px;font:inherit;font-size:13px;font-weight:650}
+.chk{display:flex;gap:10px;align-items:flex-start;margin:12px 2px 0;font-size:14px;color:var(--ink)}
+.chk input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.chk small{display:block;color:var(--muted);font-size:12.5px}
+.note{margin:10px 2px 0;font-size:13px;color:var(--muted)}
+.progt{margin-top:6px;font-size:13px;color:var(--muted)}.progt[hidden]{display:none}
+.msg{margin:12px 0 0;padding:11px 14px;border-radius:12px;font-size:14px;background:var(--accent-soft)}
+.msg.err{background:var(--warn-soft);color:var(--ink);border:1px solid var(--warn)}
+.msg[hidden]{display:none}
+.prog{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:10px}.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+details{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-top:10px}
+summary{cursor:pointer;padding:13px 16px;font-weight:650;font-size:15px;list-style:none;display:flex;justify-content:space-between;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--muted);font-weight:400;font-size:20px;line-height:1}
+details[open] summary::after{content:"–"}
+details ol{margin:0;padding:0 16px 14px 36px;font-size:14.5px}
+details ol li{margin:0 0 7px}
+details p{margin:0;padding:0 16px 14px;font-size:14px;color:var(--muted)}
+.foot{margin-top:22px;font-size:12.5px;color:var(--muted)}
+#view{position:fixed;inset:0;background:var(--bg);z-index:10}
+#view[hidden]{display:none}
+#frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+#back{position:fixed;z-index:11;top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;border-radius:99px;padding:7px 13px 7px 9px;box-shadow:0 4px 14px rgba(0,0,0,.14);cursor:pointer}
+#back[hidden]{display:none}
+#back svg{width:16px;height:16px}
+#loading{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:15px}
+#loading[hidden]{display:none}
+.spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.off{display:inline-block;font-size:12px;font-weight:650;color:var(--warn);background:var(--warn-soft);border-radius:99px;padding:2px 9px;margin-left:6px}
+</style>
+</head>
+<body>
+<main class="wrap" id="home">
+  <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5A1.5 1.5 0 0 1 3.5 4H9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H3.5A1.5 1.5 0 0 1 2 16.5zM22 5.5A1.5 1.5 0 0 0 20.5 4H15a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h6.5a1.5 1.5 0 0 0 1.5-1.5z"/></svg>Study Portal Opener<span class="off" id="offTag" hidden>Offline</span></div>
+  <h1>Open your study portal</h1>
+  <p class="lead">For phones and tablets. Choose the portal file your instructor sent you. It opens right here and stays on your device — nothing is uploaded.</p>
+
+  <div id="listBox" hidden>
+    <div class="sect">On this device</div>
+    <div class="cards" id="list"></div>
+  </div>
+
+  <div class="sect" id="addHead">Add a portal</div>
+  <label class="btn" for="pick" id="pickBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/></svg>Choose the portal file</label>
+  <input type="file" id="pick" accept=".html,.htm,text/html">
+  <p class="note">It's kept on this device, so next time you just tap its name here — even without internet. You can then delete the downloaded file to save space.</p>
+  <div class="msg" id="msg" hidden></div>
+  <div class="prog" id="prog" hidden><i></i></div><div class="progt" id="progT" hidden></div>
+
+  <div class="sect">Help</div>
+  <details>
+    <summary>Where is the portal file on my phone?</summary>
+    <ol>
+      <li><b>Sent in Messenger, Telegram or Viber:</b> tap the file, then <b>Save</b> or <b>Download</b>. On iPhone or iPad choose <b>Save to Files</b>.</li>
+      <li><b>From Google Drive or Gmail:</b> tap the file → <b>⋮</b> → <b>Download</b> (Android) or <b>Open in → Save to Files</b> (iPhone, iPad).</li>
+      <li>Then tap <b>Choose the portal file</b> above. Look in <b>Downloads</b> (Android) or <b>Browse → On My iPhone / Downloads</b> (iPhone, iPad). The file ends in <b>.html</b>.</li>
+    </ol>
+  </details>
+  <details>
+    <summary>Why not just tap the file?</summary>
+    <p>Phones show a downloaded web page as a preview that doesn't run its buttons, so the portal can't sign you in there. This page opens the same file properly, in your browser.</p>
+  </details>
+  <details>
+    <summary>Your instructor sent a new version</summary>
+    <p>Choose the new file the same way. It replaces the old copy here; your notes, settings and progress stay. Then you can delete the downloaded file.</p>
+  </details>
+  <details>
+    <summary>Add this page to your home screen</summary>
+    <ol>
+      <li><b>iPhone or iPad (Safari):</b> <b>Share</b> → <b>Add to Home Screen</b> → <b>Add</b>.</li>
+      <li><b>Android (Chrome):</b> <b>⋮</b> → <b>Add to Home screen</b>.</li>
+      <li>Open your portals from that icon from now on — it works offline too.</li>
+    </ol>
+  </details>
+  <p class="foot">On a computer you don't need this page: double-click the portal file to open it in your browser.</p>
+</main>
+
+<div id="view" hidden>
+  <div id="loading"><div><div class="spin"></div>Opening your portal…</div></div>
+</div>
+<button type="button" id="back" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>My portals</button>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var DBN = "portal-opener", ST = "portals", CS = "chunks", db = null, openUrl = "", backTimer = 0, busy = false, CUR = null, TOKEN = 0;
+  var ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5A1.5 1.5 0 0 1 3.5 4H9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H3.5A1.5 1.5 0 0 1 2 16.5zM22 5.5A1.5 1.5 0 0 0 20.5 4H15a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h6.5a1.5 1.5 0 0 0 1.5-1.5z"/></svg>';
+  var TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>';
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function size(n){ return n > 1048576 ? (n / 1048576).toFixed(n > 10485760 ? 0 : 1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
+  function say(t, err){ var m = $("msg"); m.hidden = !t; m.className = "msg" + (err ? " err" : ""); m.innerHTML = t || ""; }
+  function prog(x, t){ var p = $("prog"); p.hidden = x == null; $("progT").hidden = x == null || !t; if (x != null){ p.firstChild.style.width = Math.round(x * 100) + "%"; $("progT").textContent = t || ""; } }
+
+  // ---- this page keeps working offline once visited
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))){
+    navigator.serviceWorker.register("open-sw.js", {scope: "./open"}).catch(function(){});
+  }
+  function net(){ $("offTag").hidden = navigator.onLine !== false; }
+  addEventListener("online", net); addEventListener("offline", net); net();
+
+  // ---- storage on this device (IndexedDB): one record per portal; its materials as separate pieces
+  function dbOpen(){
+    return new Promise(function(ok, bad){
+      if (db) return ok(db);
+      if (!window.indexedDB) return bad(new Error("no storage"));
+      var r = indexedDB.open(DBN, 2);
+      r.onupgradeneeded = function(){ var d = r.result; if (!d.objectStoreNames.contains(ST)) d.createObjectStore(ST, {keyPath: "id"}); if (!d.objectStoreNames.contains(CS)) d.createObjectStore(CS); };
+      r.onsuccess = function(){ db = r.result; ok(db); };
+      r.onerror = function(){ bad(r.error); };
+    });
+  }
+  function tx(store, mode, fn){ return dbOpen().then(function(d){ return new Promise(function(ok, bad){ var t = d.transaction(store, mode), s = t.objectStore(store), out; var r = fn(s); if (r) r.onsuccess = function(){ out = r.result; }; t.oncomplete = function(){ ok(out); }; t.onerror = t.onabort = function(){ bad(t.error || new Error("storage")); }; }); }); }
+  function all(){ return tx(ST, "readonly", function(s){ return s.getAll(); }).catch(function(){ return []; }); }
+  function getRec(id){ return tx(ST, "readonly", function(s){ return s.get(id); }); }
+  function dropPieces(pid, ver){ return tx(CS, "readwrite", function(s){ s.delete(IDBKeyRange.bound(pid + "|" + ver + "|", pid + "|" + ver + "|￿")); }).catch(function(){}); }
+
+  // ---- read a chosen file: is it a study portal? title, logo, its id, whether it can be kept piece by piece
+  function inspect(file){
+    return file.slice(0, 1600000).text().then(function(t){
+      if (t.indexOf('id="portal-data"') < 0) return null;
+      var title = (/<title>([^<]*)<\/title>/.exec(t) || [])[1] || file.name.replace(/\.html?$/i, "");
+      var dat = t.slice(t.indexOf('id="portal-data"'));
+      var id = (/^[^>]*>\s*\{\s*"v"\s*:\s*\d+\s*,\s*"id"\s*:\s*"([^"]+)"/.exec(dat) || [])[1] || title;
+      var ic = (/"icon"\s*:\s*"(data:image\/png;base64,[A-Za-z0-9+\/=]+)"/.exec(dat) || /"logo"\s*:\s*"(data:image\/png;base64,[A-Za-z0-9+\/=]+)"/.exec(dat) || [])[1] || "";
+      var tmp = document.createElement("textarea"); tmp.innerHTML = title; title = tmp.value;
+      var built = (/"built"\s*:\s*"([^"]+)"/.exec(dat) || [])[1] || "", upd = (/"upd"\s*:\s*"(https?:\/\/[^"]+)"/.exec(dat) || [])[1] || "";
+      return {id: id, title: title, icon: ic, split: t.indexOf('content="chunks-external"') > -1, built: built, upd: upd};
+    });
+  }
+
+  // ---- keep a portal piece by piece: the page itself (small) + each 4 MB piece of its materials, read from the
+  // file a slice at a time, so even a very large portal never has to sit in the phone's memory all at once.
+  var TAG = '<script type="application/x-portal-chunk" id="', END = "</" + "script>";
+  async function splitStore(file, info, ver){
+    var dec = new TextDecoder(), buf = "", shell = [], off = 0, SL = 8 * 1048576, n = 0;
+    var hook = '<script>window.PORTAL_CHUNK=function(id){return parent.PORTAL_OPENER.chunk(' + JSON.stringify(info.id) + ',id);};' + END;
+    var hooked = false;
+    function toShell(x){
+      if (!hooked){ var h = x.indexOf("<head>"); if (h > -1){ x = x.slice(0, h + 6) + hook + x.slice(h + 6); hooked = true; } }
+      if (x) shell.push(x);
+    }
+    while (off < file.size || buf){
+      if (off < file.size){
+        var part = await file.slice(off, off + SL).arrayBuffer(); off += part.byteLength;
+        buf += dec.decode(part, {stream: off < file.size});
+        prog(0.05 + 0.9 * off / file.size, "Preparing your portal… " + Math.round(100 * off / file.size) + "%");
+      }
+      var batch = [];
+      for (;;){
+        var a = buf.indexOf(TAG);
+        if (a < 0){                                                        // keep the last few characters: a tag may start there
+          var keep = off < file.size ? TAG.length : 0;
+          if (buf.length > keep){ toShell(buf.slice(0, buf.length - keep)); buf = buf.slice(buf.length - keep); }
+          break;
+        }
+        var e = buf.indexOf(END, a);
+        if (e < 0){
+          if (off >= file.size){ toShell(buf); buf = ""; break; }          // damaged end of file: keep the rest as it is
+          if (a > 0){ toShell(buf.slice(0, a)); buf = buf.slice(a); }
+          break;                                                           // the piece continues in the next slice
+        }
+        if (a > 0) toShell(buf.slice(0, a));
+        var q = buf.indexOf('">', a), cid = buf.slice(a + TAG.length, q), body = buf.slice(q + 2, e);
+        batch.push([cid, body]); n++;
+        var z = e + END.length; if (buf.charAt(z) === "\n") z++;
+        buf = buf.slice(z);
+      }
+      if (batch.length) await tx(CS, "readwrite", function(s){ batch.forEach(function(b){ s.put(b[1], info.id + "|" + ver + "|" + b[0]); }); });
+      if (off >= file.size && buf.indexOf(TAG) < 0){ if (buf) toShell(buf); buf = ""; }
+    }
+    if (!hooked) throw new Error("not a portal page");
+    return {shell: new Blob(shell, {type: "text/html"}), pieces: n};
+  }
+
+  async function addFile(f, quiet){
+    if (busy) return; busy = true; if (!quiet) say(""); prog(0.03, quiet ? "Installing the new version…" : "Checking the file…");
+    try {
+      var info = await inspect(f);
+      if (!info){ prog(null); say("That file isn't a study portal. Choose the <b>.html</b> portal file your instructor sent.", true); return; }
+      if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function(){});
+      if (navigator.storage && navigator.storage.estimate){
+        var est = await navigator.storage.estimate().catch(function(){ return null; });
+        var oldSz = 0; try { var o0 = await getRec(info.id); oldSz = o0 ? o0.size : 0; } catch(x){}
+        if (est && est.quota && est.quota - (est.usage || 0) + oldSz < f.size * 1.15){ prog(null); say("Your phone doesn't have enough free space for this portal (" + size(f.size) + "). Free up some space, then try again.", true); return; }
+      }
+      var old = await getRec(info.id).catch(function(){ return null; }), ver = Date.now().toString(36), rec, wasUpd = !!old;
+      rec = {id: info.id, title: info.title, icon: info.icon, size: f.size, name: f.name, added: old ? old.added : Date.now(), saved: f.lastModified || Date.now(), opened: quiet && old ? old.opened : Date.now(), ver: ver, built: info.built, upd: info.upd};
+      if (info.split){
+        var r;
+        try { r = await splitStore(f, info, ver); }
+        catch(e){
+          await dropPieces(info.id, ver);
+          if (!(old && /quota/i.test(String(e && (e.name + e.message))))) throw e;
+          // not enough room for the old and new versions side by side: remove the old one first, then try again
+          prog(0.05, "Making room: removing the old version…");
+          await tx(ST, "readwrite", function(s){ return s.delete(info.id); });
+          if (old.split) await dropPieces(info.id, old.ver);
+          old = null;
+          try { r = await splitStore(f, info, ver); } catch(e2){ await dropPieces(info.id, ver); throw e2; }
+        }
+        rec.split = true; rec.shell = r.shell; rec.pieces = r.pieces;
+      } else rec.blob = f;                                                  // a portal built before 19 Nov 2026: kept whole
+      prog(0.97, "Saving…");
+      await tx(ST, "readwrite", function(s){ return s.put(rec); });
+      if (old && old.split && old.ver && old.ver !== ver) dropPieces(info.id, old.ver);
+      prog(null); paint();
+      if (quiet){ delete UPAV[info.id]; paint(); say("Updated <b>" + esc(info.title) + "</b> by itself to your instructor's newest version" + (quiet.note ? ": " + esc(String(quiet.note).replace(/[.\s]+$/, "")) : "") + "."); return; }
+      say((wasUpd ? "Updated <b>" + esc(info.title) + "</b> to the new version." : "Added <b>" + esc(info.title) + "</b>.") + " You can delete the downloaded file now.");
+      openRec(await getRec(info.id));
+    } catch(e){
+      try { console.warn("portal opener: could not keep the portal", e); } catch(x){}
+      prog(null);
+      say(/quota|space|storage/i.test(String(e && (e.name + e.message))) ? "Your phone ran out of space while keeping the portal. Free up some space, then try again." : "That file couldn't be read. Download it again and try once more.", true);
+    } finally { busy = false; }
+  }
+
+  function paint(){
+    return all().then(function(list){
+      list.sort(function(a, b){ return (b.opened || b.added) - (a.opened || a.added); });
+      $("listBox").hidden = !list.length; $("addHead").textContent = list.length ? "Add or update a portal" : "Add a portal";
+      $("list").innerHTML = list.map(function(p){
+        var dt = new Date(p.saved || p.added), when = dt.toLocaleDateString(undefined, dt.getFullYear() === new Date().getFullYear() ? {month: "short", day: "numeric"} : {month: "short", day: "numeric", year: "numeric"});
+        return '<div class="card" data-id="' + esc(p.id) + '">' + (p.icon ? '<img class="ico" alt="" src="' + p.icon + '">' : '<span class="ico">' + ICO + '</span>') +
+          '<div class="tx"><b>' + esc(p.title) + '</b><span>' + esc(size(p.size) + " · version of " + when) + '</span>' +
+          (UPAV[p.id] ? '<button type="button" class="upnow" data-up="' + esc(p.id) + '">Update available (' + esc(size(UPAV[p.id].size)) + ') — update now</button>' : "") + '</div>' +
+          '<button type="button" class="btn go" data-open="' + esc(p.id) + '">Open</button><button type="button" class="rm" data-rm="' + esc(p.id) + '" aria-label="Remove from this device" title="Remove from this device">' + TRASH + '</button></div>';
+      }).join("");
+    });
+  }
+
+  $("pick").addEventListener("change", function(){ var f = this.files && this.files[0]; this.value = ""; if (f) addFile(f); });
+  $("list").addEventListener("click", function(e){
+    var o = e.target.closest("[data-open]"), r = e.target.closest("[data-rm]"), u = e.target.closest("[data-up]");
+    if (u){ getRec(u.dataset.up).then(function(p){ if (p && UPAV[p.id]) upInstall(p, UPAV[p.id]); }); return; }
+    if (o){
+      if (busy){ say("Saving a portal on this device — one moment, then tap Open again."); return; }
+      getRec(o.dataset.open).then(function(p){
+        if (!p || !(p.shell || p.blob)){ say("That copy is missing — choose the portal file again.", true); paint(); return; }
+        p.opened = Date.now(); tx(ST, "readwrite", function(s){ return s.put(p); }).catch(function(){});
+        openRec(p);
+      }, function(){ say("Couldn't open the saved copy. Choose the portal file again.", true); });
+    }
+    if (r){
+      if (!r.classList.contains("sure")){ r.classList.add("sure"); r.textContent = "Remove"; setTimeout(function(){ if (r.isConnected){ r.classList.remove("sure"); r.innerHTML = TRASH; } }, 4000); return; }
+      var id = r.dataset.rm;
+      getRec(id).then(function(p){ return tx(ST, "readwrite", function(s){ return s.delete(id); }).then(function(){ if (p && p.split) return dropPieces(id, p.ver); }); }).then(paint, paint);
+    }
+  });
+
+  // ---- one portal's shortcut opens another kept here; if it isn't here yet, the student adds its file once
+  var WANT = null;                                                          // {t: target, who, until}
+  function same(p, t){ return !!p && ((t.pid && p.id === t.pid) || (t.name && p.name === t.name) || (t.title && String(p.title).toLowerCase() === String(t.title).toLowerCase())); }
+  function portalGo(t, who){
+    WANT = {t: t || {}, who: who || null, until: Date.now() + 10 * 60000};
+    all().then(function(list){
+      var hit = list.filter(function(p){ return same(p, WANT.t); })[0];
+      if (hit){ hit.opened = Date.now(); tx(ST, "readwrite", function(s){ return s.put(hit); }).catch(function(){}); openRec(hit); return; }
+      home();
+      say("To open <b>" + esc(t.title || t.name || "that portal") + "</b>, add its file to this device first: tap <b>Choose the portal file</b>" + (t.name ? " and pick <b>" + esc(t.name) + "</b>" : "") + ". It opens right after.", true);
+      try { $("pickBtn").scrollIntoView({block: "center"}); $("pickBtn").focus(); } catch(e){}
+    });
+  }
+  function takeSignin(pid, title){
+    var w = WANT; if (!w || Date.now() > w.until || !w.who) return null;
+    if (!(CUR && same(CUR, w.t)) && !(pid && w.t.pid === pid) && !(title && w.t.title && title.toLowerCase() === w.t.title.toLowerCase())) return null;
+    WANT = null; return w.who;
+  }
+
+  // ---- the portal asks for a piece of its materials only when it opens that material
+  window.PORTAL_OPENER = {
+    portal: portalGo, takeSignin: takeSignin,
+    chunk: function(pid, cid){
+      var ver = CUR && CUR.id === pid ? CUR.ver : null;
+      return (ver ? Promise.resolve(ver) : getRec(pid).then(function(p){ return p && p.ver; })).then(function(v){
+        return tx(CS, "readonly", function(s){ return s.get(pid + "|" + v + "|" + cid); });
+      }).then(function(t){ return t || ""; });
+    }
+  };
+
+  // ---- show a portal (same browser, nothing uploaded)
+  function openRec(p){
+    CUR = p;
+    if (openUrl) URL.revokeObjectURL(openUrl);
+    var src = p.split ? p.shell : p.blob;
+    openUrl = URL.createObjectURL(src.type === "text/html" ? src : new Blob([src], {type: "text/html"}));
+    $("loading").hidden = false; $("view").hidden = false; $("home").hidden = true;
+    document.title = p.title || "Study portal";
+    var old = $("frame"); if (old) old.remove();                          // a fresh frame each time: no extra steps in the Back history
+    var f = document.createElement("iframe"); f.id = "frame"; f.title = "Study portal";
+    f.allow = "autoplay; fullscreen; encrypted-media; picture-in-picture; clipboard-write";
+    f.onload = function(){ $("loading").hidden = true; };
+    f.src = openUrl; $("view").appendChild(f);
+    TOKEN = Date.now(); history.pushState({portal: TOKEN}, "");              // the phone's Back gesture returns to the list
+    clearInterval(backTimer); backTimer = setInterval(backPaint, 700);
+  }
+  function backPaint(){                                                    // "My portals" button only on the portal's sign-in screen
+    var on = false;
+    try { var d = $("frame") && $("frame").contentDocument, l = d && d.getElementById("login"); on = !!(l && !l.hidden && !$("view").hidden); } catch(e){}
+    $("back").hidden = !on;
+  }
+  // ---- online updates: a portal built with "Online updates" says where its instructor uploads new versions. On the
+  // list (never while a portal is open), the opener checks there and installs a newer version by itself; big ones wait for a tap.
+  var UPAV = {}, UPBUSY = false, UP_AUTO = 60 * 1048576;
+  async function hashHex(buf){ var h = new Uint8Array(await crypto.subtle.digest("SHA-256", buf)); return Array.prototype.map.call(h, function(b){ return (b < 16 ? "0" : "") + b.toString(16); }).join(""); }
+  async function upFetch(p){
+    try { var r = await fetch(p.upd + "latest.json?t=" + Date.now(), {cache: "no-store"}); if (!r.ok) return null; var m = await r.json();
+      return m && m.id === p.id && Array.isArray(m.parts) && m.parts.length && Date.parse(m.built) > (Date.parse(p.built) || 0) ? m : null; } catch(e){ return null; }
+  }
+  async function upInstall(p, m){
+    if (busy || UPBUSY) return; UPBUSY = true;
+    var got = [], done = 0;
+    try {
+      for (var k = 0; k < m.parts.length; k++){
+        var pt = m.parts[k];
+        prog(Math.max(0.02, done / m.size * 0.6), "Downloading the new version of " + p.title + "… " + Math.round(done / m.size * 100) + "%");
+        var r = await fetch(p.upd + encodeURIComponent(pt.n) + "?v=" + encodeURIComponent(m.built), {cache: "no-store"});
+        if (!r.ok) throw new Error("missing part");
+        var buf = await r.arrayBuffer();
+        if (buf.byteLength !== pt.s || await hashHex(buf) !== pt.h) throw new Error("check");
+        got.push(buf); done += buf.byteLength;
+      }
+      var f = new File(got, m.name || p.name || "portal.html", {type: "text/html", lastModified: Date.parse(m.built) || Date.now()}); got = null;
+      UPBUSY = false;
+      if (!$("view").hidden){ prog(null); return; }                         // a portal was opened meanwhile: next time
+      await addFile(f, {note: m.note || ""});
+    } catch(e){ try { console.warn("portal update:", e); } catch(x){} prog(null); }
+    finally { UPBUSY = false; }
+  }
+  async function upCheckAll(){
+    if (navigator.onLine === false || busy || UPBUSY || !$("view").hidden) return;
+    var list = (await all()).filter(function(p){ return p.upd && /^https?:\/\//.test(p.upd); });
+    for (var i = 0; i < list.length; i++){
+      var m = await upFetch(list[i]); if (!m) continue;
+      if (m.size > UP_AUTO){ UPAV[list[i].id] = m; paint(); continue; }
+      if (!$("view").hidden) return;
+      await upInstall(list[i], m);
+    }
+  }
+  addEventListener("online", function(){ setTimeout(upCheckAll, 1500); });
+
+  function home(){
+    clearInterval(backTimer); $("back").hidden = true; CUR = null;
+    var f = $("frame"); if (f) f.remove();
+    if (openUrl){ URL.revokeObjectURL(openUrl); openUrl = ""; }
+    $("view").hidden = true; $("home").hidden = false; document.title = "Study Portal Opener"; paint();
+    setTimeout(upCheckAll, 800);
+  }
+  $("back").onclick = function(){ home(); };
+  addEventListener("popstate", function(e){ if (!$("view").hidden && !(e.state && e.state.portal === TOKEN)) home(); });
+
+  paint(); setTimeout(upCheckAll, 1200);
+})();
+</script>
+</body>
+</html>
